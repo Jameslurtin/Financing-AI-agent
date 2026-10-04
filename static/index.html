@@ -1,0 +1,53 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Financing AI — Assessment workspace</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <header class="topbar"><a class="brand" href="/" aria-label="Financing AI home"><span class="brand-icon">f<span>↗</span></span>Financing<span class="brand-light">AI</span></a><nav><span class="demo-tag">EDUCATIONAL DEMO</span><a href="/docs" target="_blank" rel="noopener">API docs ↗</a></nav></header>
+  <main>
+    <div class="intro"><div><div class="eyebrow">SME FINANCING WORKSPACE</div><h1>A clearer first step<br>toward financing.</h1><p>Explore a financing category for your business.<br>One request. A transparent initial assessment.</p></div><div class="intro-note"><span class="live-dot"></span> Built for exploration<p>Demo rules. Explainable outcomes.<br>Human judgment stays in the loop.</p></div></div>
+    <div class="workspace">
+      <section class="panel request-panel" aria-labelledby="request-title">
+        <div class="panel-heading"><div><span class="step">01 / YOUR BUSINESS</span><h2 id="request-title">Start an assessment</h2></div><span class="small-label">All fields required</span></div>
+        <div class="examples"><span>Try an example</span><button type="button" data-example="equipment">Equipment</button><button type="button" data-example="invoice">Cash flow</button><button type="button" data-example="review">Human review</button></div>
+        <form id="assessment-form">
+          <fieldset id="form-fields">
+            <div class="fields">
+              <label>Company name<input name="company_name" required maxlength="200" placeholder="e.g. ABC Software" autocomplete="organization"></label>
+              <label>Industry<input name="industry" required maxlength="200" placeholder="e.g. Technology"></label>
+              <label>Annual revenue (€)<input name="annual_revenue" type="number" min="0.01" step="0.01" required placeholder="100000" inputmode="decimal"></label>
+              <label>Number of employees<input name="employees" type="number" min="1" step="1" required placeholder="8" inputmode="numeric"></label>
+              <label class="full">Requested financing (€)<input name="requested_amount" type="number" min="0.01" step="0.01" required placeholder="20000" inputmode="decimal"></label>
+              <label class="full">What will you use the financing for?<textarea name="financing_purpose" required maxlength="1000" rows="3" placeholder="Tell us about the equipment, invoices, or growth you want to finance."></textarea></label>
+            </div>
+            <fieldset class="workflow"><legend>Choose your workflow</legend><label class="workflow-option"><input type="radio" name="workflow" value="deterministic" checked><span><strong>Guided assessment</strong><small>Fixed checks, AI-assisted explanation</small></span><span class="option-icon">↗</span></label><label class="workflow-option"><input type="radio" name="workflow" value="agentic"><span><strong>AI agent</strong><small>Gemini selects and calls the tools</small></span><span class="option-icon">✧</span></label></fieldset>
+            <button class="primary" id="submit-button" type="submit">Run assessment <span>→</span></button>
+          </fieldset>
+          <p id="form-error" class="error" role="alert" hidden></p>
+          <p class="privacy">Use fictional data for this demo. When available, Gemini processes the information you submit. Requests are not saved by this app.</p>
+        </form>
+      </section>
+      <section class="panel result-panel" aria-labelledby="result-title" aria-busy="false">
+        <div class="panel-heading"><div><span class="step">02 / YOUR ASSESSMENT</span><h2 id="result-title">The next step, explained.</h2></div><span id="result-badge" class="badge">Ready when you are</span></div>
+        <div id="empty-state"><div class="abstract-art" aria-hidden="true"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="art-center">↗</div><span class="art-dot"></span></div><h3>Possibility starts with a little context.</h3><p>Tell us about your business to see a suggested<br>financing category and the reasoning behind it.</p><div class="empty-steps"><span><b>1</b> Check demo eligibility</span><span><b>2</b> Explore a category</span><span><b>3</b> Understand the next step</span></div></div>
+        <div id="loading-state" hidden><div class="spinner"></div><h3>Working through your request</h3><p id="loading-message" role="status">Running your assessment…</p><p class="muted">AI requests may take a few minutes. If Gemini is unavailable, you’ll still receive a demo assessment.</p></div>
+        <div id="result-content" hidden>
+          <div class="result-summary"><span class="eyebrow" id="result-company"></span><h3 id="result-category"></h3><p id="result-status"></p></div>
+          <div class="metrics"><div><span>Requested amount</span><strong id="result-amount"></strong></div><div><span>Share of annual revenue</span><strong id="result-ratio"></strong></div></div>
+          <div class="threshold"><div><span>Demo threshold: 30% of revenue</span><span id="threshold-value"></span></div><div class="meter"><div id="meter-fill"></div><span></span></div><small>A teaching heuristic, not a real lending rule.</small></div>
+          <div id="fallback-notice" class="notice" hidden>AI was unavailable or its response could not be verified. This result uses the reliable demo workflow.</div>
+          <div class="explanation"><h4>Why this result?</h4><p id="result-explanation"></p></div>
+          <div id="review-notice" class="notice review-notice" hidden><strong>A person needs to review this request.</strong><p>No case has been sent to a reviewer. Share the downloaded assessment with a demo reviewer for discussion.</p></div>
+          <details><summary>How this assessment ran</summary><dl><dt>Workflow</dt><dd id="detail-workflow"></dd><dt>Execution</dt><dd id="detail-execution"></dd><dt>Observed agent tool calls</dt><dd id="detail-tools"></dd></dl></details>
+          <button type="button" class="secondary" id="download-button">Download assessment ↓</button>
+        </div>
+      </section>
+    </div>
+    <footer><span class="footer-symbol">◇</span><p><strong>An initial assessment. Never an approval.</strong> This educational application does not make lending decisions, offer financing, or guarantee funding.</p><span class="footer-label">FINANCING AI / DEMO</span></footer>
+  </main>
+</body>
+</html>

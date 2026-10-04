@@ -1,29 +1,18 @@
+from models import FinancingRequest
 from tools import check_eligibility, recommend_financing
 
 
-def process_financing_request(request):
-
-    eligibility = check_eligibility(
-        annual_revenue=request.annual_revenue,
-        requested_amount=request.requested_amount
-    )
-
-    # Decision point
-    if not eligibility["eligible"]:
-        return {
-            "eligibility": eligibility,
-            "recommended_financing": None,
-            "requires_human_review": True,
-            "status": "Escalated for human review"
-        }
-
-    recommendation = recommend_financing(
-        request.financing_purpose
-    )
-
+def assessment_result(eligibility: dict, recommendation: str | None) -> dict:
+    review = not eligibility["eligible"] or recommendation is None
     return {
         "eligibility": eligibility,
-        "recommended_financing": recommendation,
-        "requires_human_review": False,
-        "status": "Initial assessment completed"
+        "recommended_financing": None if review else recommendation,
+        "requires_human_review": review,
+        "status": "Escalated for human review" if review else "Initial assessment completed",
     }
+
+
+def process_financing_request(request: FinancingRequest) -> dict:
+    eligibility = check_eligibility(request.annual_revenue, request.requested_amount)
+    recommendation = recommend_financing(request.financing_purpose) if eligibility["eligible"] else None
+    return assessment_result(eligibility, recommendation)

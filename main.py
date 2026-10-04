@@ -1,54 +1,48 @@
-from fastapi import FastAPI
+import logging
+from pathlib import Path
 
+from fastapi import FastAPI
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+
+from agent import DISCLAIMER, generate_financing_explanation, render_explanation
+from ai_agent import process_agent_request
 from models import FinancingRequest
 from orchestrator import process_financing_request
-from agent import generate_financing_explanation
 
-app = FastAPI()
+logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
+app = FastAPI(title="Financing-AI-Agent", description=DISCLAIMER)
+STATIC_DIR = Path(__file__).resolve().parent / "static"
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
-@app.get("/")
+@app.get("/", response_class=FileResponse, include_in_schema=False)
 def home():
-    return {"message": "Financing AI Agent is running"}
+    return FileResponse(STATIC_DIR / "index.html")
+
+
+@app.get("/health")
+def health():
+    return {"message": "Financing AI Agent is running", "disclaimer": DISCLAIMER}
 
 
 @app.post("/evaluate")
 def evaluate_financing(request: FinancingRequest):
-
-    # Orchestrator decides the workflow
     result = process_financing_request(request)
-
-    # If the case requires human review, return safely
+    fallback = False
     if result["requires_human_review"]:
-        return {
-            "company": request.company_name,
-            "eligibility": result["eligibility"],
-            "recommended_financing": None,
-            "requires_human_review": True,
-            "status": result["status"],
-            "ai_explanation": (
-                "This request requires human review before "
-                "a financing option can be recommended."
-            )
-        }
-
-   
-    ai_explanation = generate_financing_explanation(
-        company_name=request.company_name,
-        industry=request.industry,
-        annual_revenue=request.annual_revenue,
-        employees=request.employees,
-        requested_amount=request.requested_amount,
-        financing_purpose=request.financing_purpose,
-        eligibility=result["eligibility"],
-        recommendation=result["recommended_financing"]
-    )
-
+        explanation = render_explanation(result)
+        mode = "review_without_llm"
+    else:
+        explanation, fallback = generate_financing_explanation(request, result)
+        mode = "deterministic_fallback" if fallback else "gemini_explanation"
     return {
-        "company": request.company_name,
-        "eligibility": result["eligibility"],
-        "recommended_financing": result["recommended_financing"],
-        "requires_human_review": False,
-        "status": result["status"],
-        "ai_explanation": ai_explanation
+        "company": request.company_name, **result,
+        "ai_explanation": explanation, "workflow": "deterministic",
+        "execution_mode": mode, "llm_fallback": fallback, "tool_calls": [],
     }
+
+
+@app.post("/agent-evaluate")
+def agent_evaluate(request: FinancingRequest):
+    return process_agent_request(request)

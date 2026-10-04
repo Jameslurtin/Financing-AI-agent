@@ -1,33 +1,32 @@
-def check_eligibility(annual_revenue: float, requested_amount: float):
-    # Demo rule only — not a real financial lending rule
-    max_amount = annual_revenue * 0.30
+import logging
 
-    if requested_amount <= max_amount:
-        return {
-            "eligible": True,
-            "message": "The SME passes the basic eligibility check."
-        }
+logger = logging.getLogger(__name__)
 
+
+def check_eligibility(annual_revenue: float, requested_amount: float) -> dict:
+    """Check the educational 30%-of-revenue heuristic, not real underwriting."""
+    logger.info("Tool called: check_eligibility")
+    eligible = requested_amount <= annual_revenue * 0.30
     return {
-        "eligible": False,
-        "message": "The requested amount is too high compared with annual revenue."
+        "eligible": eligible,
+        "message": (
+            "The SME passes the basic demo eligibility check."
+            if eligible else
+            "The requested amount is too high compared with annual revenue under the demo heuristic."
+        ),
     }
 
 
-def recommend_financing(financing_purpose: str):
+def recommend_financing(financing_purpose: str) -> str | None:
+    """Suggest a demo category by purpose; return None for unknown purposes."""
+    logger.info("Tool called: recommend_financing")
     purpose = financing_purpose.lower()
-
-    if "equipment" in purpose or "machine" in purpose:
-        return "Equipment financing or leasing"
-
-    elif "invoice" in purpose or "cash flow" in purpose:
-        return "Invoice financing or factoring"
-
-    elif "working capital" in purpose:
-        return "Working capital loan or credit line"
-
-    elif "expansion" in purpose or "growth" in purpose:
-        return "Business growth loan"
-
-    else:
-        return "Financing option requires further analysis"
+    for keywords, category in [
+        (("equipment", "machine"), "Equipment financing or leasing"),
+        (("invoice", "cash flow"), "Invoice financing or factoring"),
+        (("working capital",), "Working capital loan or credit line"),
+        (("expansion", "growth"), "Business growth loan"),
+    ]:
+        if any(word in purpose for word in keywords):
+            return category
+    return None
